@@ -58,7 +58,7 @@ contract FlashLoan {
         require(pair != address(0), "Pool does not exist"); // Ensure liquidity pool exists
 
         // Create a token swap path
-        address;
+        address[] memory path = new address[](2);
         path[0] = _fromToken;
         path[1] = _toToken;
 
