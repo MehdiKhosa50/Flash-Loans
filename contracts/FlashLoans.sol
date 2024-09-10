@@ -38,7 +38,7 @@ contract FlashLoans {
     function placeTrade(
         address fromToken,
         address toToken,
-        uint amount
+        uint amountIn
     ) private returns (uint) {
         address pair = IUniswapV2Factory(PANCAKE_FACTORY).getPair(
             frqomToken,
@@ -48,6 +48,25 @@ contract FlashLoans {
             conditional(address(pair) != addressZero),
             "FlashLoans: PAIR_NOT_EXIST"
         );
+        address[] memory path = new address[](2);
+        path[0] = fromToken;
+        path[1] = toToken;
+
+        uint amountRequired = IUniswapV2Router01(PANCAKE_FACTORY).getAmountOut(
+            amountIn,
+            path
+        )[1];
+        uint amountReceived = IUniswapV2Router01(PANCAKE_FACTORY)
+            .swapExactTokensForTokens(
+                amountIn,
+                amountRequired,
+                path,
+                address(this),
+                deadline
+            )[1];
+        require(amountReceived > 0, "FlashLoans: INSUFFICIENT_AMOUNT");
+
+        return amountReceived;
     }
 
     function initialArbitrage(address busdBorrow, uint amount) external {
